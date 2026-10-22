@@ -1,6 +1,5 @@
 # ProAgro
 
-> 👉 **Para instalar todo, publicar el servidor y sacar el APK, sigan [GUIA-APK.md](GUIA-APK.md).**
 
 App móvil para pequeños agricultores de Ciudad Bolívar: clima y alertas, Mi Cultivo, Riego (FAO-56),
 AgroBot con IA (texto y fotos), Estadísticas y Mercado sin intermediarios.
