@@ -6,7 +6,6 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "co.proagro.app",
       "supportsTablet": false,
@@ -23,9 +22,9 @@
       "package": "co.proagro.app",
       "allowBackup": false,
       "permissions": [
-        "CAMERA",
-        "USE_BIOMETRIC",
-        "USE_FINGERPRINT"
+        "android.permission.CAMERA",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
       ],
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO",
@@ -52,6 +51,13 @@
     ],
     "experiments": {
       "typedRoutes": false
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "56a3f6b1-8306-4262-84bc-ff2e895bae03"
+      }
+    },
+    "owner": "balcolrde"
   }
 }
