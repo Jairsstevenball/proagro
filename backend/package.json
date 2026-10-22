@@ -1,0 +1,44 @@
+{
+  "name": "proagro-backend",
+  "version": "1.1.0",
+  "private": true,
+  "description": "API de ProAgro: clima, cultivos, riego, estadísticas, AgroBot y Marketplace",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "postinstall": "prisma generate",
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "claves": "node scripts/generar-claves.js",
+    "admin": "node scripts/crear-admin.js",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "test": "node --test \"test/**/*.test.js\"",
+    "seguridad": "npm audit --omit=dev",
+    "diagnostico": "node scripts/diagnostico.js",
+    "db:push": "prisma db push"
+  },
+  "dependencies": {
+    "@google/genai": "^1.20.0",
+    "@node-rs/argon2": "^2.0.2",
+    "@prisma/client": "^6.16.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "jose": "^6.1.0",
+    "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
+    "pino": "^9.9.0",
+    "pino-http": "^10.5.0",
+    "prisma": "^6.16.0",
+    "sharp": "^0.34.3",
+    "zod": "^3.25.76"
+  },
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,307 @@
+// Esquema basado en el Diagrama Relacional "MI CULTIVO / PROAGRO".
+//
+// CAMBIOS respecto al diagrama (todos por seguridad o porque el mockup lo pide):
+//  - Usuario usa un id interno (UUID) como PK. El documento (cédula), el celular y el
+//    correo se guardan CIFRADOS (AES-256-GCM) + un "hash ciego" (HMAC) para poder
+//    buscarlos y exigir que sean únicos sin guardarlos en texto plano.
+//    Por eso las FK "Documento" del diagrama se llaman aquí "idUsuario".
+//  - Las FK idCultivo son Int (en el diagrama de clases aparecen como String).
+//  - Cultivo.areaM2: necesaria para calcular litros de riego recomendados.
+//  - Riego.fechaRegistro: para saber cuánta agua se aplicó cada mes.
+//  - RegistroCultivo.anio/mes/costoProduccion: el mockup de estadísticas pide
+//    "¿cuánto dinero gastó?" además del ingreso.
+//  - Usuario.rol: el administrador aparece en los casos de uso de la exposición.
+//  - Tablas NUEVAS: Sesion (refresh tokens), Auditoria, PushToken, Producto,
+//    ReportePublicacion y ContactoMercado (Marketplace).
+//  - Fotos: fotoUrl guarda solo el NOMBRE del archivo; la URL firmada se genera al responder.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  AGRICULTOR
+  ADMIN
+}
+
+enum EstadoCultivo {
+  ACTIVO
+  INACTIVO
+}
+
+enum EstadoNotificacion {
+  NO_LEIDA
+  LEIDA
+}
+
+enum TipoProducto {
+  INSUMO
+  COSECHA
+}
+
+enum EstadoProducto {
+  ACTIVO
+  PAUSADO
+  VENDIDO
+  OCULTO // ocultado por moderación (reportes o administrador)
+}
+
+model Usuario {
+  id                String   @id @default(uuid()) @db.Uuid
+  // Datos personales cifrados (formato "v1:iv:tag:datos" en base64url)
+  documentoCifrado  String
+  documentoHash     String   @unique
+  celularCifrado    String
+  celularHash       String   @unique
+  correoCifrado     String?
+  correoHash        String?  @unique
+  nombre            String
+  primerApellido    String
+  segundoApellido   String?
+  ubicacion         String // vereda: Quiba Bajo, Mochuelo Alto, Pasquilla, Santa Rosa
+  contrasena        String? // hash Argon2id; null si entra solo con Google/Microsoft
+  proveedorAuth     String   @default("local") // local | google | microsoft
+  oauthHash         String?  @unique // HMAC(proveedor:sub)
+  rol               Rol      @default(AGRICULTOR)
+  fechaRegistro     DateTime @default(now())
+
+  // Protección de la cuenta
+  activo            Boolean   @default(true) // false = bloqueada por un administrador
+  tokenVersion      Int       @default(0) // subirlo invalida todas las sesiones
+  intentosFallidos  Int       @default(0)
+  bloqueadoHasta    DateTime?
+  ultimoIngreso     DateTime?
+  contrasenaCambiada DateTime?
+
+  // Consentimiento Ley 1581 de 2012 (Habeas Data)
+  terminosVersion   String
+  terminosFecha     DateTime @default(now())
+
+  cultivos       Cultivo[]
+  mensajes       AgroBot[]
+  notificaciones NotificacionAlerta[]
+  sesiones       Sesion[]
+  pushTokens     PushToken[]
+  productos      Producto[]
+  reportes       ReportePublicacion[]
+  contactos      ContactoMercado[]
+
+  @@index([ubicacion])
+  @@map("usuario")
+}
+
+model Sesion {
+  id            String    @id @default(uuid()) @db.Uuid
+  idUsuario     String    @db.Uuid
+  tokenHash     String // SHA-256 del refresh token vigente
+  tokenAnterior String? // SHA-256 del anterior: si alguien lo reutiliza => robo
+  dispositivo   String? // nombre del dispositivo (informativo)
+  ipHash        String?
+  creada        DateTime  @default(now())
+  ultimoUso     DateTime  @default(now())
+  expira        DateTime // vencimiento deslizante
+  expiraAbsoluta DateTime // nunca se extiende más allá de esto
+  revocada      DateTime?
+
+  usuario Usuario @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
+
+  @@index([idUsuario])
+  @@map("sesion")
+}
+
+model Auditoria {
+  id        Int      @id @default(autoincrement())
+  idUsuario String?  @db.Uuid // sin FK: el registro sobrevive aunque se borre la cuenta
+  evento    String // LOGIN_OK, LOGIN_FALLIDO, CUENTA_BLOQUEADA, REUSO_TOKEN, ...
+  ipHash    String?
+  userAgent String?
+  detalle   Json?
+  fecha     DateTime @default(now())
+
+  @@index([idUsuario, fecha])
+  @@index([evento, fecha])
+  @@map("auditoria")
+}
+
+model PushToken {
+  token     String   @id
+  idUsuario String   @db.Uuid
+  fecha     DateTime @default(now())
+
+  usuario Usuario @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
+
+  @@index([idUsuario])
+  @@map("push_token")
+}
+
+model Cultivo {
+  idCultivo         Int           @id @default(autoincrement())
+  idUsuario         String        @db.Uuid
+  tipoCultivo       String
+  tipoAbono         String?
+  herramientas      String?
+  fotoUrl           String?
+  areaM2            Float?
+  estado            EstadoCultivo @default(ACTIVO)
+  fechaInicio       DateTime      @default(now())
+  fechaFinalizacion DateTime?
+
+  usuario        Usuario              @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
+  registros      RegistroCultivo[]
+  riegos         Riego[]
+  notificaciones NotificacionAlerta[]
+  mensajes       AgroBot[]
+
+  @@index([idUsuario, estado])
+  @@map("cultivo")
+}
+
+model RegistroCultivo {
+  idRegistro      Int      @id @default(autoincrement())
+  idCultivo       Int
+  fechaRegistro   DateTime @default(now())
+  anio            Int
+  mes             Int // 1-12
+  cantidadCosecha Float // kg
+  valorVenta      Float? // COP
+  costoProduccion Float? // COP
+  saludCultivo    String // EXCELENTE | BUENA | REGULAR | MALA
+
+  cultivo Cultivo @relation(fields: [idCultivo], references: [idCultivo], onDelete: Cascade)
+
+  @@unique([idCultivo, anio, mes])
+  @@map("registro_cultivo")
+}
+
+model Riego {
+  idRiego         Int      @id @default(autoincrement())
+  idCultivo       Int
+  horaRiego       String? // "06:00"
+  cantidadAgua    Float // litros por día
+  metodoRiego     String // GOTEO | ASPERSION | CANALES
+  frecuenciaRiego Int // veces por día
+  observaciones   String?
+  fechaRegistro   DateTime @default(now())
+
+  cultivo        Cultivo              @relation(fields: [idCultivo], references: [idCultivo], onDelete: Cascade)
+  notificaciones NotificacionAlerta[]
+
+  @@index([idCultivo, fechaRegistro])
+  @@map("riego")
+}
+
+model Clima {
+  idClima        Int      @id @default(autoincrement())
+  ubicacion      String
+  fechaHora      DateTime @default(now())
+  temperatura    Float
+  humedad        Float
+  velocidad      Float // viento km/h
+  condicionCielo String
+  precipitacion  Float? // mm
+  et0            Float? // evapotranspiración de referencia del día (mm)
+
+  notificaciones NotificacionAlerta[]
+
+  @@index([ubicacion, fechaHora])
+  @@map("clima")
+}
+
+model NotificacionAlerta {
+  idNotificacion Int                @id @default(autoincrement())
+  idUsuario      String             @db.Uuid
+  idCultivo      Int?
+  idRiego        Int?
+  idClima        Int?
+  tipoAlerta     String // CLIMA | CULTIVO | RIEGO
+  nivel          String             @default("INFO") // INFO | PRECAUCION | PELIGRO
+  titulo         String
+  mensaje        String
+  estado         EstadoNotificacion @default(NO_LEIDA)
+  fecha          DateTime           @default(now())
+
+  usuario Usuario  @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
+  cultivo Cultivo? @relation(fields: [idCultivo], references: [idCultivo], onDelete: SetNull)
+  riego   Riego?   @relation(fields: [idRiego], references: [idRiego], onDelete: SetNull)
+  clima   Clima?   @relation(fields: [idClima], references: [idClima], onDelete: SetNull)
+
+  @@index([idUsuario, estado])
+  @@map("notificacion_alerta")
+}
+
+model AgroBot {
+  idMensaje      Int      @id @default(autoincrement())
+  idUsuario      String   @db.Uuid
+  idCultivo      Int?
+  mensajeUsuario String
+  imagenUrl      String?
+  respuestaBot   String
+  fechaHora      DateTime @default(now())
+
+  usuario Usuario  @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
+  cultivo Cultivo? @relation(fields: [idCultivo], references: [idCultivo], onDelete: SetNull)
+
+  @@index([idUsuario, fechaHora])
+  @@map("agrobot")
+}
+
+// ---------------- Marketplace ----------------
+
+model Producto {
+  idProducto       Int            @id @default(autoincrement())
+  idUsuario        String         @db.Uuid
+  tipo             TipoProducto
+  categoria        String
+  titulo           String
+  descripcion      String?
+  precio           Int // pesos colombianos, sin decimales
+  unidad           String // kg | arroba | bulto | canastilla | unidad | litro
+  cantidad         Float // disponible
+  vereda           String
+  fotoUrl          String?
+  estado           EstadoProducto @default(ACTIVO)
+  fechaPublicacion DateTime       @default(now())
+  actualizado      DateTime       @updatedAt
+
+  usuario   Usuario              @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
+  reportes  ReportePublicacion[]
+  contactos ContactoMercado[]
+
+  @@index([estado, tipo, fechaPublicacion])
+  @@index([idUsuario])
+  @@map("producto")
+}
+
+model ReportePublicacion {
+  idReporte  Int      @id @default(autoincrement())
+  idProducto Int
+  idUsuario  String   @db.Uuid
+  motivo     String // ESTAFA | PRODUCTO_PROHIBIDO | PRECIO_ENGANOSO | OFENSIVO | OTRO
+  detalle    String?
+  revisado   Boolean  @default(false)
+  fecha      DateTime @default(now())
+
+  producto Producto @relation(fields: [idProducto], references: [idProducto], onDelete: Cascade)
+  usuario  Usuario  @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
+
+  @@unique([idProducto, idUsuario])
+  @@map("reporte_publicacion")
+}
+
+model ContactoMercado {
+  idContacto Int      @id @default(autoincrement())
+  idProducto Int
+  idUsuario  String   @db.Uuid // comprador
+  fecha      DateTime @default(now())
+
+  producto Producto @relation(fields: [idProducto], references: [idProducto], onDelete: Cascade)
+  usuario  Usuario  @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
+
+  @@index([idUsuario, fecha])
+  @@map("contacto_mercado")
+}
