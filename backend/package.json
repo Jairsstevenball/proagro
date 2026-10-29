@@ -1,6 +1,6 @@
 {
   "name": "proagro-backend",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "description": "API de ProAgro: clima, cultivos, riego, estadísticas, AgroBot y Marketplace",
   "type": "module",
@@ -20,7 +20,8 @@
     "test": "node --test \"test/**/*.test.js\"",
     "seguridad": "npm audit --omit=dev",
     "diagnostico": "node scripts/diagnostico.js",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "fotos:migrar": "node scripts/migrar-fotos.js"
   },
   "dependencies": {
     "@google/genai": "^1.20.0",

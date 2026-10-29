@@ -52,7 +52,7 @@ export default function RiegoCultivo() {
       <MensajeError mensaje={rec.error} onReintentar={rec.recargar} />
 
       {r && !r.error ? (
-        <Tarjeta titulo="Recomendación de hoy" icono="robot-happy-outline" estilo={{ backgroundColor: '#DCEFF7' }}>
+        <Tarjeta titulo="Recomendación de hoy" icono="water-check-outline" blanca>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
             <MaterialCommunityIcons name="water" size={40} color={colores.info} />
             <View style={{ marginLeft: 8 }}>

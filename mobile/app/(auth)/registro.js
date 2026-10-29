@@ -70,7 +70,7 @@ export default function Registro() {
         <Selector etiqueta="Ubicación" valor={f.ubicacion} opciones={veredas} onCambio={cambiar('ubicacion')} placeholder="Selecciona tu vereda" error={errores.ubicacion} />
         <Campo etiqueta="Celular" value={f.celular} onChangeText={cambiar('celular')} error={errores.celular} keyboardType="phone-pad" maxLength={13} autoComplete="tel" />
         <Campo etiqueta="Correo electrónico (opcional)" value={f.correoElectronico} onChangeText={cambiar('correoElectronico')} error={errores.correoElectronico} keyboardType="email-address" autoCapitalize="none" maxLength={120} />
-        <Boton titulo="Continuar" onPress={continuar} />
+        <Boton titulo="continuar" onPress={continuar} estilo={{ marginTop: 14 }} />
       </Pantalla>
     );
   }
@@ -84,8 +84,8 @@ export default function Registro() {
       <CampoClave etiqueta="Contraseña" value={clave.contrasena} onChangeText={(v) => setClave((c) => ({ ...c, contrasena: v }))} maxLength={128} ayuda="Mínimo 8 caracteres, con letras y números" textContentType="newPassword" />
       <CampoClave etiqueta="Confirmar contraseña" value={clave.confirmar} onChangeText={(v) => setClave((c) => ({ ...c, confirmar: v }))} maxLength={128} textContentType="newPassword" />
       <Pressable onPress={() => setClave((c) => ({ ...c, acepta: !c.acepta }))} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }} accessibilityRole="checkbox" accessibilityState={{ checked: clave.acepta }}>
-        <Ionicons name={clave.acepta ? 'checkbox' : 'square-outline'} size={26} color={colores.verde} />
-        <Text style={[texto.normal, { marginLeft: 8, flex: 1 }]}>
+        <Ionicons name={clave.acepta ? 'checkbox' : 'square-outline'} size={24} color={colores.verde} />
+        <Text style={[texto.normal, { marginLeft: 8, flex: 1, fontSize: 14 }]}>
           Acepto los términos y condiciones y autorizo el tratamiento de mis datos personales (Ley 1581 de 2012).
         </Text>
       </Pressable>

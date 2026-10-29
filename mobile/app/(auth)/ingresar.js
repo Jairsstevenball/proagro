@@ -1,8 +1,9 @@
-// Ingreso con celular (o correo) y contraseña
+// Ingreso del mockup: PROAGRO · Celular · Contraseña · continuar
 import { useState } from 'react';
 import * as Device from 'expo-device';
 import { usePreventScreenCapture } from 'expo-screen-capture';
-import { Pantalla, Logo, Campo, CampoClave, Boton, MensajeError, Encabezado } from '../../src/components/ui';
+import { View } from 'react-native';
+import { Pantalla, Titulo, Volver, Campo, CampoClave, Boton, MensajeError } from '../../src/components/ui';
 import { authApi } from '../../src/api/servicios';
 import { useAuth } from '../../src/auth/AuthContext';
 
@@ -31,22 +32,23 @@ export default function Ingresar() {
 
   return (
     <Pantalla>
-      <Encabezado titulo="" />
-      <Logo />
-      <Campo
-        etiqueta="Celular"
-        value={usuario}
-        onChangeText={setUsuario}
-        keyboardType="phone-pad"
-        autoComplete="tel"
-        textContentType="telephoneNumber"
-        placeholder="300 123 4567"
-        maxLength={60}
-        estilo={{ marginTop: 30 }}
-      />
-      <CampoClave etiqueta="Contraseña" value={contrasena} onChangeText={setContrasena} maxLength={128} onSubmitEditing={ingresar} />
-      <MensajeError mensaje={error} />
-      <Boton titulo="Continuar" onPress={ingresar} cargando={cargando} />
+      <Volver />
+      <Titulo tamano={44} estilo={{ marginTop: 4, marginBottom: 30 }}>PROAGRO</Titulo>
+      <View style={{ paddingHorizontal: 12 }}>
+        <Campo
+          etiqueta="Celular"
+          value={usuario}
+          onChangeText={setUsuario}
+          keyboardType="phone-pad"
+          autoComplete="tel"
+          textContentType="telephoneNumber"
+          maxLength={60}
+          estilo={{ marginBottom: 22 }}
+        />
+        <CampoClave etiqueta="Contraseña" value={contrasena} onChangeText={setContrasena} maxLength={128} onSubmitEditing={ingresar} />
+        <MensajeError mensaje={error} />
+        <Boton titulo="continuar" onPress={ingresar} cargando={cargando} estilo={{ marginTop: 18 }} />
+      </View>
     </Pantalla>
   );
 }

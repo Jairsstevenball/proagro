@@ -9,7 +9,7 @@ export default function Agregar() {
   const router = useRouter();
   return (
     <Pantalla>
-      <Encabezado titulo="MI CULTIVO" icono="sprout" subtitulo="Registra la información de tus cultivos" />
+      <Encabezado titulo="MI CULTIVO" icono="logo" subtitulo="Registra la información de tus cultivos" />
       <FormularioCultivo
         nuevo
         onGuardar={async (campos, foto) => {

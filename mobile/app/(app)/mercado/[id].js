@@ -64,12 +64,12 @@ export default function DetalleProducto() {
       <Text style={{ color: colores.verde, fontSize: 26, fontWeight: '900', marginVertical: 4 }}>{pesos(p.precio)} <Text style={texto.suave}>por {p.unidad}</Text></Text>
       <Text style={texto.normal}>{numero(p.cantidad, 1)} {p.unidad} disponibles · {p.categoria}</Text>
       {p.descripcion ? <Tarjeta estilo={{ marginTop: espacio.m }}><Text style={texto.normal}>{p.descripcion}</Text></Tarjeta> : null}
-      <Tarjeta titulo="Vendedor" icono="account-outline" estilo={{ backgroundColor: '#fff', marginTop: espacio.s }}>
+      <Tarjeta titulo="Vendedor" icono="account-outline" blanca estilo={{ marginTop: espacio.s }}>
         <Text style={texto.normal}>{p.vendedor?.nombre} · Vereda {p.vereda}</Text>
         {p.vendedor?.desde ? <Text style={texto.suave}>En ProAgro desde {fechaCorta(p.vendedor.desde)}</Text> : null}
         <Text style={texto.suave}>Publicado el {fechaCorta(p.fechaPublicacion)}</Text>
       </Tarjeta>
-      <Tarjeta estilo={{ backgroundColor: '#FFF6DD' }}>
+      <Tarjeta blanca estilo={{ backgroundColor: '#FFF6DD' }}>
         <Text style={{ fontSize: 13 }}>🛡 Consejos de seguridad: revisa el producto antes de pagar, no envíes dinero por adelantado a desconocidos y reúnete en un lugar público.</Text>
       </Tarjeta>
       <MensajeError mensaje={errorAccion} />

@@ -47,7 +47,8 @@ function BotonSocial({ texto, icono, onPress, cargando, deshabilitado }) {
       disabled={deshabilitado || cargando}
       style={({ pressed }) => ({
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: colores.blanco,
-        borderRadius: 24, paddingVertical: 12, borderWidth: 2, borderColor: colores.verdeClaro, marginVertical: 6,
+        borderRadius: 24, paddingVertical: 12, borderWidth: 3, borderColor: '#A9D88A', marginVertical: 8,
+        shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 2,
         opacity: pressed || deshabilitado ? 0.6 : 1,
       })}
     >

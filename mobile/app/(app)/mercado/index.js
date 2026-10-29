@@ -4,7 +4,7 @@ import { View, Text, Pressable, Image, FlatList, TextInput, RefreshControl } fro
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Encabezado, MensajeError, Vacio } from '../../../src/components/ui';
+import { Encabezado, MensajeError, Vacio, Fondo } from '../../../src/components/ui';
 import { mercadoApi } from '../../../src/api/servicios';
 import { colores, espacio, sombra, texto } from '../../../src/tema';
 import { pesos, numero } from '../../../src/utils/formato';
@@ -34,7 +34,8 @@ export default function Mercado() {
   useFocusEffect(useCallback(() => { cargar(1); }, [cargar]));
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colores.crema }} edges={['top']}>
+    <Fondo>
+    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <FlatList
         data={datos.productos}
         keyExtractor={(p) => String(p.idProducto)}
@@ -86,5 +87,6 @@ export default function Mercado() {
         <Text style={{ color: '#fff', fontWeight: '800', marginLeft: 4 }}>Publicar</Text>
       </Pressable>
     </SafeAreaView>
+    </Fondo>
   );
 }

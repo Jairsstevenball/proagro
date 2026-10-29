@@ -4,18 +4,14 @@
 //  3. Se vuelve a codificar como JPEG: elimina metadatos EXIF (incluida la ubicación GPS
 //     de la finca), scripts escondidos y archivos "políglotas".
 //  4. Nombre aleatorio de 128 bits; el nombre original del usuario nunca se usa.
-//  5. Se guarda fuera de cualquier carpeta pública y solo se sirve con URL firmada que vence.
+//  5. Se guarda en la BASE DE DATOS (tabla archivo), no en el disco: el disco de Render gratis
+//     se borra en cada reinicio. Solo se sirve con URL firmada que vence.
 import multer from 'multer';
 import sharp from 'sharp';
-import path from 'node:path';
-import fs from 'node:fs';
 import crypto from 'node:crypto';
-import { config } from '../config.js';
 import { HttpError } from '../lib/http.js';
 import { nombreValido } from '../lib/proteccion.js';
-
-export const UPLOAD_DIR = path.resolve(config.uploadDir);
-fs.mkdirSync(UPLOAD_DIR, { recursive: true, mode: 0o700 });
+import { prisma } from '../lib/prisma.js';
 
 const FORMATOS = new Set(['jpeg', 'png', 'webp', 'heif', 'avif']);
 
@@ -40,21 +36,53 @@ export async function procesarImagen(buffer) {
   }
   const salida = await img
     .rotate() // respeta la orientación de la cámara antes de borrar el EXIF
-    .resize(1280, 1280, { fit: 'inside', withoutEnlargement: true })
-    .jpeg({ quality: 80, mozjpeg: true })
+    .resize(1080, 1080, { fit: 'inside', withoutEnlargement: true }) // ~100-200 KB por foto
+    .jpeg({ quality: 75, mozjpeg: true })
     .toBuffer(); // sharp NO copia metadatos salvo que se pida con withMetadata()
   return { nombre: `${crypto.randomBytes(16).toString('hex')}.jpg`, buffer: salida };
 }
 
 export async function guardarImagen(buffer) {
   const { nombre, buffer: limpio } = await procesarImagen(buffer);
-  await fs.promises.writeFile(path.join(UPLOAD_DIR, nombre), limpio, { mode: 0o600, flag: 'wx' });
+  await prisma.archivo.create({ data: { nombre, datos: limpio, tamano: limpio.length } });
   return { nombre, buffer: limpio };
 }
 
 export async function borrarImagen(nombre) {
   if (!nombre || !nombreValido(nombre)) return;
-  await fs.promises.unlink(path.join(UPLOAD_DIR, nombre)).catch(() => {});
+  const enMemoria = enCache.get(nombre);
+  if (enMemoria) {
+    cacheBytes -= enMemoria.length;
+    enCache.delete(nombre);
+  }
+  await prisma.archivo.deleteMany({ where: { nombre } }).catch(() => {});
+}
+
+// Caché en memoria de las fotos más vistas (máx. 32 MB): menos consultas y menos tráfico a la BD.
+const enCache = new Map();
+const CACHE_MAX = 32 * 1024 * 1024;
+let cacheBytes = 0;
+
+/** Devuelve el Buffer JPEG de la foto o null si no existe. */
+export async function leerImagen(nombre) {
+  if (!nombreValido(nombre)) return null;
+  const hit = enCache.get(nombre);
+  if (hit) {
+    enCache.delete(nombre);
+    enCache.set(nombre, hit); // pasa al final: la más reciente
+    return hit;
+  }
+  const fila = await prisma.archivo.findUnique({ where: { nombre }, select: { datos: true } });
+  if (!fila) return null;
+  const buf = Buffer.from(fila.datos);
+  enCache.set(nombre, buf);
+  cacheBytes += buf.length;
+  for (const [k, v] of enCache) {
+    if (cacheBytes <= CACHE_MAX) break;
+    enCache.delete(k);
+    cacheBytes -= v.length;
+  }
+  return buf;
 }
 
 const MAX_BASE64 = 14_000_000; // ~10 MB de imagen

@@ -69,10 +69,15 @@ export function enmascarar(v) {
 const NOMBRE_ARCHIVO = /^[a-f0-9]{32}\.jpg$/;
 export const nombreValido = (n) => NOMBRE_ARCHIVO.test(String(n));
 
-/** Convierte el nombre guardado en BD en una URL temporal (1 hora por defecto). */
+/**
+ * Convierte el nombre guardado en BD en una URL temporal (mínimo 1 hora).
+ * El vencimiento se redondea a bloques de 6 horas: así la URL de una foto no cambia
+ * en cada consulta y el celular la reutiliza de su caché en vez de descargarla otra vez.
+ */
+const BLOQUE = 6 * 3600;
 export function urlFirmada(nombre, segundos = 3600) {
   if (!nombre || !nombreValido(nombre)) return null;
-  const exp = Math.floor(Date.now() / 1000) + segundos;
+  const exp = Math.ceil((Math.floor(Date.now() / 1000) + segundos) / BLOQUE) * BLOQUE;
   return `${config.publicUrl}/api/archivos/${nombre}?exp=${exp}&sig=${firmar(nombre, exp, config.fileKey)}`;
 }
 

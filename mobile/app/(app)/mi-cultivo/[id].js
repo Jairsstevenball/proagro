@@ -1,4 +1,4 @@
-// Detalle del cultivo: Inactivar (con confirmación) · Actualizar · Activar
+// Detalle del cultivo (Cultivos_papa del mockup): tarjetas con los datos · Inactivar (con confirmación) · Actualizar · Activar
 import { useState } from 'react';
 import { View, Text, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -6,8 +6,16 @@ import { Pantalla, Encabezado, Tarjeta, Boton, Confirmar, Cargando, MensajeError
 import FormularioCultivo from '../../../src/components/FormularioCultivo';
 import { cultivosApi } from '../../../src/api/servicios';
 import { useDatos } from '../../../src/utils/useDatos';
-import { texto } from '../../../src/tema';
+import { colores, texto } from '../../../src/tema';
 import { fechaCorta } from '../../../src/utils/formato';
+
+function Valor({ children }) {
+  return (
+    <View style={{ backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 3, paddingHorizontal: 10, paddingVertical: 8 }}>
+      <Text style={{ fontSize: 15, color: colores.texto }}>{children}</Text>
+    </View>
+  );
+}
 
 export default function DetalleCultivo() {
   const { id } = useLocalSearchParams();
@@ -32,12 +40,12 @@ export default function DetalleCultivo() {
   }
 
   if (cargando) return <Cargando />;
-  if (!c) return <Pantalla><Encabezado titulo="MI CULTIVO" /><MensajeError mensaje={error} onReintentar={recargar} /></Pantalla>;
+  if (!c) return <Pantalla><Encabezado titulo="MI CULTIVO" icono="logo" /><MensajeError mensaje={error} onReintentar={recargar} /></Pantalla>;
 
   if (editando) {
     return (
       <Pantalla>
-        <Encabezado titulo="MI CULTIVO" icono="sprout" subtitulo="Actualizar cultivo" />
+        <Encabezado titulo="MI CULTIVO" icono="logo" subtitulo="Actualiza la información de tu cultivo" />
         <FormularioCultivo
           inicial={c}
           onGuardar={async (campos, foto) => {
@@ -53,30 +61,32 @@ export default function DetalleCultivo() {
   const activo = c.estado === 'ACTIVO';
   return (
     <Pantalla>
-      <Encabezado titulo="MI CULTIVO" icono="sprout" subtitulo="Registra la información de tus cultivos" />
+      <Encabezado titulo="MI CULTIVO" icono="logo" subtitulo="Registra la información de tus cultivos" />
       <Tarjeta titulo="Información básica" icono="information-outline">
-        <Text style={texto.suave}>Tipo de cultivo</Text>
-        <Text style={texto.subtitulo}>{c.tipoCultivo}</Text>
-        <Text style={[texto.suave, { marginTop: 6 }]}>Sembrado el {fechaCorta(c.fechaInicio)}{c.areaM2 ? ` · ${c.areaM2} m²` : ''}</Text>
-        {!activo && c.fechaFinalizacion ? <Text style={texto.suave}>Inactivo desde {fechaCorta(c.fechaFinalizacion)}</Text> : null}
+        <Text style={[texto.etiqueta, { fontSize: 13 }]}>Tipo de cultivo</Text>
+        <Valor>{c.tipoCultivo}</Valor>
+        <Text style={[texto.suave, { marginTop: 6, fontSize: 12 }]}>
+          Sembrado el {fechaCorta(c.fechaInicio)}{c.areaM2 ? ` · ${c.areaM2} m²` : ''}
+          {!activo && c.fechaFinalizacion ? ` · Inactivo desde ${fechaCorta(c.fechaFinalizacion)}` : ''}
+        </Text>
       </Tarjeta>
       {c.fotoUrl ? (
         <Tarjeta titulo="Fotografía del cultivo" icono="camera-outline">
-          <Image source={{ uri: c.fotoUrl }} style={{ width: '100%', height: 190, borderRadius: 10 }} />
+          <Image source={{ uri: c.fotoUrl }} style={{ width: '100%', height: 170, borderRadius: 3 }} resizeMode="cover" />
         </Tarjeta>
       ) : null}
-      <Tarjeta titulo="Tipo de abono" icono="leaf">
-        <Text style={texto.normal}>{c.tipoAbono || 'Sin registrar'}</Text>
+      <Tarjeta titulo="Tipo de abono" icono="sprout-outline">
+        <Valor>{c.tipoAbono || 'Sin registrar'}</Valor>
       </Tarjeta>
       <Tarjeta titulo="¿Con qué herramientas cuenta usted para trabajar con este cultivo?" icono="hammer-wrench">
-        <Text style={texto.normal}>{c.herramientas || 'Sin registrar'}</Text>
+        <Valor>{c.herramientas || 'Sin registrar'}</Valor>
       </Tarjeta>
       <MensajeError mensaje={errorAccion} />
       {activo ? (
         <>
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Boton titulo="Inactivar" variante="secundario" estilo={{ flex: 1 }} onPress={() => setConfirmar(true)} />
-            <Boton titulo="Actualizar" estilo={{ flex: 1 }} onPress={() => setEditando(true)} />
+          <View style={{ flexDirection: 'row', gap: 24, paddingHorizontal: 8 }}>
+            <Boton titulo="Inactivar" ancho="lleno" estilo={{ flex: 1 }} onPress={() => setConfirmar(true)} />
+            <Boton titulo="Actualizar" ancho="lleno" estilo={{ flex: 1 }} onPress={() => setEditando(true)} />
           </View>
           <Boton titulo="Ver riego recomendado" icono="water-outline" variante="secundario" onPress={() => router.push(`/riego/${c.idCultivo}`)} />
         </>

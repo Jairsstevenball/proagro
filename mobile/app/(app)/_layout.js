@@ -10,7 +10,7 @@ const ocultas = [
   'mercado/mios', 'perfil/seguridad',
 ];
 
-const icono = (nombre) => ({ color, focused }) => <Ionicons name={focused ? nombre : `${nombre}-outline`} size={28} color={color} />;
+const icono = (nombre) => ({ color }) => <Ionicons name={`${nombre}-outline`} size={30} color={color} />;
 
 export default function AppLayout() {
   return (
@@ -20,8 +20,9 @@ export default function AppLayout() {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarActiveTintColor: colores.verde,
-        tabBarInactiveTintColor: colores.texto,
-        tabBarStyle: { backgroundColor: colores.blanco, height: 64, paddingTop: 6 },
+        tabBarInactiveTintColor: '#1A1A1A',
+        // Barra crema sin línea, solo íconos, como el mockup
+        tabBarStyle: { backgroundColor: colores.barra, height: 66, paddingTop: 8, borderTopWidth: 0, elevation: 0 },
         sceneStyle: { backgroundColor: colores.crema },
       }}
     >
@@ -33,12 +34,12 @@ export default function AppLayout() {
           title: 'Agregar cultivo',
           tabBarIcon: ({ color }) => (
             <View>
-              <Ionicons name="add-circle-outline" size={34} color={color} />
+              <Ionicons name="add-circle-outline" size={36} color={color} />
             </View>
           ),
         }}
       />
-      <Tabs.Screen name="estadisticas/index" options={{ title: 'Estadísticas', tabBarIcon: icono('stats-chart') }} />
+      <Tabs.Screen name="estadisticas/index" options={{ title: 'Estadísticas', tabBarIcon: ({ color }) => <Ionicons name="bar-chart-outline" size={28} color={color} /> }} />
       <Tabs.Screen name="perfil/index" options={{ title: 'Perfil', tabBarIcon: icono('person') }} />
       {ocultas.map((n) => (
         <Tabs.Screen key={n} name={n} options={{ href: null }} />

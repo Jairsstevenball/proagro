@@ -1,10 +1,10 @@
-// CU-09 / CU-10 Consultar cultivos activos o inactivos (tarjetas "PAPA", "MORA")
-import { Pressable, Text, ImageBackground, View } from 'react-native';
+// CU-09 / CU-10 Consultar cultivos activos o inactivos (franjas con foto y el nombre grande: "PAPA", "MORA")
+import { Pressable, Text, ImageBackground, View, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pantalla, Encabezado, Cargando, MensajeError, Vacio, Boton } from '../../../src/components/ui';
 import { cultivosApi } from '../../../src/api/servicios';
 import { useDatos } from '../../../src/utils/useDatos';
-import { colores, sombra } from '../../../src/tema';
+import { sombra, imagenes, FUENTE_TITULO } from '../../../src/tema';
 
 export default function Lista() {
   const { estado = 'ACTIVO' } = useLocalSearchParams();
@@ -15,24 +15,43 @@ export default function Lista() {
   if (cargando) return <Cargando />;
   return (
     <Pantalla>
-      <Encabezado titulo="MI CULTIVO" icono="sprout" subtitulo={activos ? 'Cultivos activos' : 'Cultivos inactivos'} />
+      <Encabezado titulo="MI CULTIVO" icono="logo" subtitulo={activos ? 'Cultivos activos' : 'Cultivos inactivos'} />
       <MensajeError mensaje={error} onReintentar={recargar} />
       {datos?.length === 0 ? (
         <Vacio mensaje={activos ? 'Aún no tienes cultivos activos.' : 'No tienes cultivos inactivos.'}>
           {activos ? <Boton titulo="Agregar cultivo" onPress={() => router.push('/agregar')} /> : null}
         </Vacio>
       ) : null}
-      {datos?.map((c) => (
-        <Pressable key={c.idCultivo} onPress={() => router.push(`/mi-cultivo/${c.idCultivo}`)} style={{ marginBottom: 16, borderRadius: 12, overflow: 'hidden', ...sombra }}>
-          <ImageBackground source={c.fotoUrl ? { uri: c.fotoUrl } : undefined} style={{ height: 110, justifyContent: 'center', alignItems: 'center', backgroundColor: activos ? colores.verde : '#9AA59A' }}>
-            <View style={{ backgroundColor: 'rgba(0,0,0,0.35)', ...StyleFill }} />
-            <Text style={{ color: '#fff', fontSize: 34, fontWeight: '900', letterSpacing: 2 }}>{c.tipoCultivo.toUpperCase()}</Text>
-            {c.areaM2 ? <Text style={{ color: '#fff' }}>{c.areaM2} m²</Text> : null}
-          </ImageBackground>
-        </Pressable>
-      ))}
+      <View style={{ paddingHorizontal: 12, marginTop: 8 }}>
+        {datos?.map((c) => (
+          <Pressable
+            key={c.idCultivo}
+            onPress={() => router.push(`/mi-cultivo/${c.idCultivo}`)}
+            style={({ pressed }) => [{ marginBottom: 22, opacity: pressed ? 0.85 : 1 }, sombra]}
+            accessibilityRole="button"
+            accessibilityLabel={`Cultivo de ${c.tipoCultivo}`}
+          >
+            <ImageBackground
+              source={c.fotoUrl ? { uri: c.fotoUrl } : activos ? imagenes.campo : imagenes.campoGris}
+              style={est.franja}
+              imageStyle={{ borderRadius: 4 }}
+            >
+              {/* Inactivos en gris, como el mockup */}
+              <View style={[est.velo, !activos && { backgroundColor: 'rgba(150,150,150,0.62)' }]} />
+              <Text style={est.nombre} numberOfLines={1} adjustsFontSizeToFit>{c.tipoCultivo.toUpperCase()}</Text>
+              {c.areaM2 ? <Text style={est.area}>{c.areaM2} m²</Text> : null}
+            </ImageBackground>
+          </Pressable>
+        ))}
+      </View>
     </Pantalla>
   );
 }
 
-const StyleFill = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 };
+const sombraTexto = { textShadowColor: 'rgba(0,0,0,0.55)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 };
+const est = StyleSheet.create({
+  franja: { height: 74, justifyContent: 'center', alignItems: 'center', borderRadius: 4, overflow: 'hidden' },
+  velo: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.18)' },
+  nombre: { color: '#fff', fontSize: 34, fontFamily: FUENTE_TITULO, letterSpacing: 2, paddingHorizontal: 10, ...sombraTexto },
+  area: { color: '#fff', fontSize: 12, ...sombraTexto },
+});

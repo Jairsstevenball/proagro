@@ -1,11 +1,10 @@
-// CU-05 Gestionar riego: elegir el cultivo (tarjetas PAPA / MORA del mockup)
-import { Pressable, Text, Image, View } from 'react-native';
+// CU-05 Gestionar riego: elegir el cultivo (tarjetas verdes "PAPA" / "MORA" con su foto, como el mockup)
+import { Pressable, Text, Image, View, ImageBackground, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pantalla, Encabezado, Cargando, MensajeError, Vacio, Boton } from '../../../src/components/ui';
 import { cultivosApi } from '../../../src/api/servicios';
 import { useDatos } from '../../../src/utils/useDatos';
-import { colores, sombra } from '../../../src/tema';
+import { colores, sombra, imagenes } from '../../../src/tema';
 
 export default function Riego() {
   const router = useRouter();
@@ -22,16 +21,26 @@ export default function Riego() {
       ) : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
         {datos?.map((c) => (
-          <Pressable key={c.idCultivo} onPress={() => router.push(`/riego/${c.idCultivo}`)} style={{ width: '48%', backgroundColor: colores.verdeClaro, borderRadius: 14, padding: 10, marginBottom: 14, alignItems: 'center', ...sombra }}>
-            <Text style={{ fontSize: 22, fontWeight: '900', color: colores.texto }}>{c.tipoCultivo.toUpperCase()}</Text>
-            {c.fotoUrl ? (
-              <Image source={{ uri: c.fotoUrl }} style={{ width: '100%', height: 100, borderRadius: 10, marginTop: 6 }} />
-            ) : (
-              <MaterialCommunityIcons name="sprout" size={70} color={colores.verde} style={{ marginTop: 6 }} />
-            )}
+          <Pressable
+            key={c.idCultivo}
+            onPress={() => router.push(`/riego/${c.idCultivo}`)}
+            style={({ pressed }) => [{ width: '47%', marginBottom: 16, opacity: pressed ? 0.85 : 1 }, sombra]}
+            accessibilityRole="button"
+            accessibilityLabel={`Riego de ${c.tipoCultivo}`}
+          >
+            <ImageBackground source={imagenes.panel} resizeMode="stretch" style={est.tarjeta} imageStyle={{ borderRadius: 12 }}>
+              <Text style={est.nombre} numberOfLines={1} adjustsFontSizeToFit>{c.tipoCultivo.toUpperCase()}</Text>
+              <Image source={c.fotoUrl ? { uri: c.fotoUrl } : imagenes.campo} style={est.foto} resizeMode="cover" />
+            </ImageBackground>
           </Pressable>
         ))}
       </View>
     </Pantalla>
   );
 }
+
+const est = StyleSheet.create({
+  tarjeta: { borderRadius: 12, padding: 10, alignItems: 'center', overflow: 'hidden', borderWidth: 1, borderColor: colores.panelBorde },
+  nombre: { fontSize: 22, fontWeight: '900', color: '#3A3A3A', letterSpacing: 1, marginBottom: 6 },
+  foto: { width: '86%', aspectRatio: 1.1, borderRadius: 6 },
+});

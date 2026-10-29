@@ -34,7 +34,7 @@ export default function Perfil() {
   return (
     <Pantalla>
       <Encabezado titulo="MI PERFIL" icono="account-circle-outline" atras={false} />
-      <Tarjeta titulo="Mis datos" icono="card-account-details-outline" estilo={{ backgroundColor: '#fff' }}>
+      <Tarjeta titulo="Mis datos" icono="card-account-details-outline" blanca>
         <Text style={texto.subtitulo}>{usuario?.nombre} {usuario?.primerApellido} {usuario?.segundoApellido || ''}</Text>
         <Text style={texto.normal}>Documento: {ocultar(usuario?.documento)}</Text>
         <Text style={texto.normal}>Celular: {ocultar(usuario?.celular)}</Text>

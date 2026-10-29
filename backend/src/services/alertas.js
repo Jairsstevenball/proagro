@@ -43,6 +43,7 @@ export async function revisarAlertas() {
   for (const { ubicacion } of veredas) {
     try {
       const pronostico = await obtenerPronostico(ubicacion);
+      if (pronostico.desactualizado) continue; // no se alerta con datos viejos
       const clima = await guardarSnapshot(pronostico);
       const riesgos = detectarRiesgos(pronostico);
       if (!riesgos.length) continue;

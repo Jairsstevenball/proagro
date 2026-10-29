@@ -66,14 +66,14 @@ export default function Seguridad() {
     <Pantalla>
       <Encabezado titulo="SEGURIDAD" icono="shield-check-outline" />
 
-      <Tarjeta titulo="Desbloqueo con huella o rostro" icono="fingerprint" estilo={{ backgroundColor: '#fff' }}>
+      <Tarjeta titulo="Desbloqueo con huella o rostro" icono="fingerprint" blanca>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text style={[texto.normal, { flex: 1 }]}>Pedir huella al abrir la app después de 2 minutos sin usarla</Text>
           <Switch value={biometria} onValueChange={cambiarBiometria} trackColor={{ true: colores.verde }} />
         </View>
       </Tarjeta>
 
-      <Tarjeta titulo={usuario?.tieneContrasena ? 'Cambiar contraseña' : 'Crear contraseña'} icono="lock-outline" estilo={{ backgroundColor: '#fff' }}>
+      <Tarjeta titulo={usuario?.tieneContrasena ? 'Cambiar contraseña' : 'Crear contraseña'} icono="lock-outline" blanca>
         {usuario?.tieneContrasena ? <CampoClave etiqueta="Contraseña actual" value={clave.actual} onChangeText={(v) => setClave((c) => ({ ...c, actual: v }))} maxLength={128} /> : null}
         <CampoClave etiqueta="Nueva contraseña" value={clave.nueva} onChangeText={(v) => setClave((c) => ({ ...c, nueva: v }))} maxLength={128} ayuda="Mínimo 8 caracteres, con letras y números" />
         <CampoClave etiqueta="Confirmar nueva contraseña" value={clave.confirmar} onChangeText={(v) => setClave((c) => ({ ...c, confirmar: v }))} maxLength={128} />
@@ -81,7 +81,7 @@ export default function Seguridad() {
         <Boton titulo="Guardar contraseña" onPress={guardarClave} cargando={guardando} />
       </Tarjeta>
 
-      <Tarjeta titulo="Teléfonos con sesión abierta" icono="cellphone-lock" estilo={{ backgroundColor: '#fff' }}>
+      <Tarjeta titulo="Teléfonos con sesión abierta" icono="cellphone-lock" blanca>
         <MensajeError mensaje={sesiones.error} onReintentar={sesiones.recargar} />
         {sesiones.datos?.map((s) => (
           <View key={s.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colores.borde }}>
@@ -99,7 +99,7 @@ export default function Seguridad() {
         <Boton titulo="Cerrar sesión en todos los teléfonos" variante="secundario" onPress={cerrarTodas} />
       </Tarjeta>
 
-      <Tarjeta titulo="Mis datos personales" icono="database-lock-outline" estilo={{ backgroundColor: '#fff' }}>
+      <Tarjeta titulo="Mis datos personales" icono="database-lock-outline" blanca>
         <Text style={texto.suave}>
           Tu documento, celular y correo se guardan cifrados. Según la Ley 1581 de 2012 puedes pedir que borremos toda tu información.
         </Text>

@@ -48,6 +48,17 @@ try {
 } catch (e) {
   mal(`No se pudo consultar el clima: ${e.message}`);
 }
+console.log('   Respaldo: MET Noruega');
+try {
+  const r = await fetch('https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=4.4555&lon=-74.1590', {
+    headers: { 'User-Agent': 'ProAgro/1.1 (proyecto academico UCundinamarca; https://github.com/Jairsstevenball)' },
+    signal: AbortSignal.timeout(10000),
+  });
+  const j = await r.json();
+  ok(`Respaldo responde: ${j.properties?.timeseries?.[0]?.data?.instant?.details?.air_temperature} °C en Pasquilla`);
+} catch (e) {
+  mal(`El respaldo de clima no responde: ${e.message}`);
+}
 
 // 4. Procesador de imágenes
 console.log('\n4) Procesador de fotos (sharp)');

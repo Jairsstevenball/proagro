@@ -212,6 +212,28 @@ model Clima {
   @@map("clima")
 }
 
+// Último pronóstico de cada vereda. Si Render se reinicia o el proveedor de clima falla,
+// la app sigue mostrando el último dato guardado.
+model ClimaCache {
+  clave         String   @id // nombre de la vereda
+  datos         Json
+  actualizadoEn DateTime @updatedAt
+
+  @@map("clima_cache")
+}
+
+// Fotos (cultivos, Mercado, AgroBot) guardadas EN la base de datos.
+// El disco de Render gratis se borra en cada reinicio; la base de datos no.
+// Las fotos ya llegan limpias (sin EXIF/GPS) y reducidas por sharp.
+model Archivo {
+  nombre   String   @id // 32 caracteres hex + ".jpg" (aleatorio)
+  datos    Bytes
+  tamano   Int
+  creadoEn DateTime @default(now())
+
+  @@map("archivo")
+}
+
 model NotificacionAlerta {
   idNotificacion Int                @id @default(autoincrement())
   idUsuario      String             @db.Uuid
