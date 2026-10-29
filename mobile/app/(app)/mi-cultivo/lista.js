@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pantalla, Encabezado, Cargando, MensajeError, Vacio, Boton } from '../../../src/components/ui';
 import { cultivosApi } from '../../../src/api/servicios';
 import { useDatos } from '../../../src/utils/useDatos';
-import { sombra, imagenes, FUENTE_TITULO } from '../../../src/tema';
+import { sombra, imagenes, FUENTE_TITULO, relleno } from '../../../src/tema';
 
 export default function Lista() {
   const { estado = 'ACTIVO' } = useLocalSearchParams();
@@ -51,7 +51,7 @@ export default function Lista() {
 const sombraTexto = { textShadowColor: 'rgba(0,0,0,0.55)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 };
 const est = StyleSheet.create({
   franja: { height: 74, justifyContent: 'center', alignItems: 'center', borderRadius: 4, overflow: 'hidden' },
-  velo: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.18)' },
+  velo: { ...relleno, backgroundColor: 'rgba(0,0,0,0.18)' },
   nombre: { color: '#fff', fontSize: 34, fontFamily: FUENTE_TITULO, letterSpacing: 2, paddingHorizontal: 10, ...sombraTexto },
   area: { color: '#fff', fontSize: 12, ...sombraTexto },
 });

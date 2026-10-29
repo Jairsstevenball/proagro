@@ -55,6 +55,9 @@ export const sombra = {
   elevation: 3,
 };
 
+// Capa que cubre todo su contenedor (va DETRÁS o ENCIMA sin ocupar espacio).
+export const relleno = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 };
+
 export const imagenes = {
   fondo: require('../assets/img/fondo.jpg'),
   logo: require('../assets/img/logo.png'),

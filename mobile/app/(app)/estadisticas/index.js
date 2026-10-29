@@ -5,7 +5,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Pantalla, Encabezado, Selector, Boton, Cargando, MensajeError, Vacio } from '../../../src/components/ui';
 import { cultivosApi, estadisticasApi } from '../../../src/api/servicios';
-import { colores, espacio, sombra, texto } from '../../../src/tema';
+import { colores, espacio, sombra, texto, relleno } from '../../../src/tema';
 import { MESES, MES_CORTO, pesos, numero } from '../../../src/utils/formato';
 
 
@@ -89,7 +89,7 @@ export default function Estadisticas() {
                       ))}
                     </View>
                     <View style={{ flex: 1 }}>
-                      <View style={{ height: ALTO, justifyContent: 'space-between', ...StyleSheet.absoluteFillObject }}>
+                      <View style={{ height: ALTO, justifyContent: 'space-between', ...relleno }}>
                         {[0, 1, 2, 3, 4].map((k) => <View key={k} style={est.guia} />)}
                       </View>
                       <View style={{ height: ALTO, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around' }}>

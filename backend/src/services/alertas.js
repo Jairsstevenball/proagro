@@ -7,6 +7,7 @@ import { logger } from '../lib/logger.js';
 import { obtenerPronostico, guardarSnapshot, detectarRiesgos } from './clima.js';
 import { consejoCultivo } from '../data/cultivos.js';
 import { enviarPush } from './push.js';
+import { recomendarRiego } from './riego.js';
 
 /** Convierte los riesgos en alertas "Alerta Clima" + "Alerta Cultivo" (como en el mockup). */
 export function construirAlertas(riesgos, cultivosActivos) {
@@ -24,6 +25,24 @@ export function construirAlertas(riesgos, cultivosActivos) {
     }
   }
   return alertas;
+}
+
+/** Recomendación diaria "Riego de hoy" por cultivo (FAO-56 + pronóstico). */
+export function alertasRiego(pronostico, cultivos) {
+  const salida = [];
+  for (const c of cultivos) {
+    try {
+      const rec = recomendarRiego({ cultivo: c, ultimoRiego: c.riegos?.[0], dias: pronostico.proximos });
+      if (rec.error || !rec.mensajes?.length) continue;
+      salida.push({
+        tipoAlerta: 'RIEGO', nivel: 'INFO', idCultivo: c.idCultivo,
+        titulo: `${c.tipoCultivo}: riego de hoy`, mensaje: rec.mensajes.join(' '),
+      });
+    } catch {
+      // un cultivo con datos incompletos no debe frenar a los demás
+    }
+  }
+  return salida;
 }
 
 async function yaExiste(idUsuario, a, desde) {
@@ -46,20 +65,27 @@ export async function revisarAlertas() {
       if (pronostico.desactualizado) continue; // no se alerta con datos viejos
       const clima = await guardarSnapshot(pronostico);
       const riesgos = detectarRiesgos(pronostico);
-      if (!riesgos.length) continue;
 
       const usuarios = await prisma.usuario.findMany({
         where: { ubicacion, activo: true },
         select: {
           id: true,
           pushTokens: { select: { token: true } },
-          cultivos: { where: { estado: 'ACTIVO' }, select: { idCultivo: true, tipoCultivo: true } },
+          cultivos: {
+            where: { estado: 'ACTIVO' },
+            select: {
+              idCultivo: true, tipoCultivo: true, fechaInicio: true, areaM2: true,
+              riegos: { orderBy: { fechaRegistro: 'desc' }, take: 1 },
+            },
+          },
         },
       });
 
       for (const u of usuarios) {
         const nuevas = [];
-        for (const a of construirAlertas(riesgos, u.cultivos)) {
+        // Alertas de riesgo (si hay) + la recomendación de riego del día para cada cultivo (siempre).
+        const todas = [...construirAlertas(riesgos, u.cultivos), ...alertasRiego(pronostico, u.cultivos)];
+        for (const a of todas) {
           if (await yaExiste(u.id, a, desde)) continue;
           await prisma.notificacionAlerta.create({
             data: {
@@ -71,10 +97,10 @@ export async function revisarAlertas() {
           creadas++;
         }
         // Un solo push por persona con la alerta más grave (no llenarle el teléfono).
-        const principal = nuevas.find((a) => a.nivel === 'PELIGRO') || nuevas[0];
+        const principal = nuevas.find((a) => a.nivel === 'PELIGRO') || nuevas.find((a) => a.nivel === 'PRECAUCION') || nuevas[0];
         if (principal) {
           for (const { token } of u.pushTokens) {
-            mensajesPush.push({ to: token, title: principal.titulo, body: principal.mensaje, sound: 'default', data: { pantalla: 'notificaciones' } });
+            mensajesPush.push({ to: token, title: principal.titulo, body: principal.mensaje, sound: 'default', channelId: 'alertas', data: { pantalla: 'notificaciones' } });
           }
         }
       }

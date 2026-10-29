@@ -9,7 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { colores, espacio, texto, sombra, imagenes } from '../tema';
+import { colores, espacio, texto, sombra, imagenes, relleno } from '../tema';
 import { tomarFoto, escogerFoto } from '../utils/fotos';
 
 /** Título verde grueso del mockup: PROAGRO, REGISTRO, MI CULTIVO, RIEGO... */
@@ -337,7 +337,7 @@ export function Vacio({ icono = 'sprout-outline', mensaje, children }) {
 }
 
 const est = StyleSheet.create({
-  marca: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 90 },
+  marca: { ...relleno, alignItems: 'center', justifyContent: 'center', paddingTop: 120 },
   tarjeta: { borderRadius: 6, padding: espacio.m, marginBottom: espacio.m, overflow: 'hidden', borderWidth: 1, borderColor: colores.panelBorde },
   tarjetaBlanca: { backgroundColor: colores.blanco, borderRadius: 10, padding: espacio.m, marginBottom: espacio.m, borderWidth: 1, borderColor: '#E3E8DC', ...sombra },
   input: {

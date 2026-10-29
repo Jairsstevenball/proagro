@@ -6,6 +6,7 @@ import { useDatos } from '../../src/utils/useDatos';
 import { colores, espacio, sombra } from '../../src/tema';
 import { fechaCorta } from '../../src/utils/formato';
 
+const TIPO = { CLIMA: 'Alerta Clima', CULTIVO: 'Alerta Cultivo', RIEGO: 'Recomendación de riego' };
 const COLOR = { PELIGRO: colores.peligro, PRECAUCION: colores.precaucion, INFO: colores.info };
 
 export default function Notificaciones() {
@@ -21,10 +22,10 @@ export default function Notificaciones() {
     <Pantalla>
       <Encabezado titulo="ALERTAS" icono="bell-outline" />
       <MensajeError mensaje={error} onReintentar={recargar} />
-      {datos?.length === 0 ? <Vacio icono="bell-check-outline" mensaje="No tienes alertas. Te avisaremos si viene una helada, granizo, lluvias fuertes o un periodo seco." /> : null}
+      {datos?.length === 0 ? <Vacio icono="bell-check-outline" mensaje="No tienes alertas. Cada mañana te llega la recomendación de riego de tus cultivos, y te avisamos si viene una helada, granizo, lluvias fuertes o un periodo seco." /> : null}
       {datos?.map((n) => (
         <View key={n.idNotificacion} style={{ backgroundColor: '#fff', borderRadius: 10, padding: espacio.m, marginBottom: espacio.s, borderLeftWidth: 5, borderLeftColor: COLOR[n.nivel] || colores.info, opacity: n.estado === 'LEIDA' ? 0.75 : 1, ...sombra }}>
-          <Text style={{ fontWeight: '800' }}>{n.tipoAlerta === 'CLIMA' ? 'Alerta Clima' : 'Alerta Cultivo'} · {n.titulo}</Text>
+          <Text style={{ fontWeight: '800' }}>{TIPO[n.tipoAlerta] || 'Alerta'} · {n.titulo}</Text>
           <Text style={{ marginTop: 3 }}>{n.mensaje}</Text>
           <Text style={{ color: colores.textoSuave, fontSize: 12, marginTop: 4 }}>{fechaCorta(n.fecha)}</Text>
         </View>

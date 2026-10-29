@@ -3,7 +3,7 @@
     "name": "ProAgro",
     "slug": "proagro",
     "scheme": "proagro",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "ios": {
@@ -56,6 +56,12 @@
     "experiments": {
       "typedRoutes": false
     },
-    "icon": "./assets/icon.png"
+    "icon": "./assets/icon.png",
+    "owner": "balcolrde",
+    "extra": {
+      "eas": {
+        "projectId": "56a3f6b1-8306-4262-84bc-ff2e895bae03"
+      }
+    }
   }
 }
